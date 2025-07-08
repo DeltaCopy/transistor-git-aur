@@ -14,7 +14,6 @@ jobs:
         uses: actions/checkout@v4.2.0
         with:
           repository: ${{ github.repository }}
-          sparse-checkout: .github
           sparse-checkout-cone-mode: false
 
       - name: System update
@@ -33,10 +32,10 @@ jobs:
           passwd -d builduser # Delete the buildusers password
           printf 'builduser ALL=(ALL) ALL\n' | tee -a /etc/sudoers # Allow the builduser passwordless sudo
         
-      - name: Copy generated output files for darkly-bin to /tmp for builduser to access
+      - name: Copy PKGBUILD to /tmp for builduser to access
         run: |
           mkdir "${{ env.TEMP_DIR }}"
-          cp -f $GITHUB_WORKSPACE/.github/PKGBUILD "${{ env.TEMP_DIR }}"
+          cp -f PKGBUILD "${{ env.TEMP_DIR }}"
           chown -R builduser:builduser "${{ env.TEMP_DIR }}"
 
       - name: Test transistor build
