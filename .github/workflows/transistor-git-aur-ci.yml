@@ -1,7 +1,9 @@
 # Validates the build of Transisition
 # Upstream: https://invent.kde.org/saurov/transistor
 name: Transistor PKGBUILD builder
-on: workflow_dispatch
+on:
+  schedule:
+    - cron: "0 00 * * *" # At 00:00 daily
 env:
   AUR_TRANSISTOR_REPO: https://aur.archlinux.org/packages/transistor-git.git
   TEMP_DIR: /tmp/transistor
