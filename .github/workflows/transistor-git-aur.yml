@@ -20,11 +20,7 @@ jobs:
         run: pacman -Syu --noconfirm
       - name: Install sudo, git and compile dependencies
         run: |
-          pacman -Syq sudo git binutils ninja gcc pkg-config fakeroot plasma-desktop \
-          cmake extra-cmake-modules qt6-base \
-          qt6-declarative kcoreaddons \
-          kcmutils kconfig kguiaddons \
-          kiconthemes kirigami --noconfirm
+          pacman -Syq base-devel --noconfirm
 
       - name: Setup build user
         run: |
@@ -40,4 +36,4 @@ jobs:
 
       - name: Test transistor build
         run: |
-          sudo -u builduser bash -c 'cd "${{ env.TEMP_DIR }}"; makepkg -s'
+          sudo -u builduser bash -c 'cd "${{ env.TEMP_DIR }}"; makepkg -s --noconfirm'
