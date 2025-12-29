@@ -65,7 +65,6 @@ build() (
 )
 
 package() (
-  install -dm755 "$pkgdir.git"
   DESTDIR="$pkgdir" ninja install -C $build_dir
   rm -rf "$pkgdir/usr/lib/cmake"
 )
