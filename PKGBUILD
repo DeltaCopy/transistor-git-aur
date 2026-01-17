@@ -34,6 +34,7 @@ depends=(
   'qt6-svg'
   'kirigami'
   'kcoreaddons'
+  'kdbusaddons'
   'kiconthemes'
   'knotifications'
   'jack'

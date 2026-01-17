@@ -18,6 +18,7 @@ pkgbase = transistor-git
 	depends = qt6-svg
 	depends = kirigami
 	depends = kcoreaddons
+	depends = kdbusaddons
 	depends = kiconthemes
 	depends = knotifications
 	depends = jack
