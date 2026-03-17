@@ -1,0 +1,157 @@
+# Build Transitor and publish release
+name: Transistor Git AUR CI Manual
+on: workflow_dispatch
+env:
+  AUR_TRANSISTOR_REPO: https://aur.archlinux.org/transistor-git.git
+  BUILD_DIR: /tmp/transistor-git
+  GIT_USER: DeltaCopy
+  GIT_EMAIL: 7x0bb03yq@mozmail.com
+  GITLAB_ID: 79622630
+  REPO_NAME: transistor
+jobs:
+  GetLatestVersion:
+    runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.step_version.outputs.VERSION }}
+    steps:
+      - name: Update & install jq
+        run: sudo apt-get update -y && sudo apt-get install -y jq
+      - name: Get latest version
+        id: step_version
+        run: |
+
+          # get rev count
+          revc=$(curl -s --url "https://gitlab.com/api/v4/projects/$GITLAB_ID/repository/commits?ref_name=main" | jq '.|length')
+
+          # get latest short_id from remote
+          short_id=$(curl -s --url "https://gitlab.com/api/v4/projects/$GITLAB_ID/repository/commits?ref_name=main&per_page=1" | jq -r '.[].short_id')
+
+          echo "INFO: Latest commit = $short_id"
+          echo "INFO: Rev count = $revc"
+
+          if [ ! -z $short_id ] && [ ! -z $revc ]; then
+            echo "VERSION=r${revc}.${short_id}" >> "$GITHUB_OUTPUT"
+          else
+            echo "Latest rev count or short_id is unknown"
+            exit 1
+          fi
+
+      - name: Checkout local
+        uses: actions/checkout@v6.0.2
+        with:
+          repository: ${{ github.repository }}
+
+      - name: Update README
+        run: |
+          echo ${{ steps.step_version.outputs.VERSION }}
+          cat << EOF > README.md
+            # transistor-aur-ci
+
+            Scheduled pipeline (runs daily at ~12PM) to publish updated PKGBUILD for transistor-git AUR package.
+
+            Upstream repository: https://gitlab.com/driglu4it/transistor
+
+            AUR package: https://aur.archlinux.org/packages/transistor-git
+
+            [![Transistor AUR CI](https://github.com/DeltaCopy/transistor-git-aur-ci/actions/workflows/transistor-git-aur-ci.yml/badge.svg)](https://github.com/DeltaCopy/transistor-git-aur-ci/actions/workflows/transistor-git-aur-ci.yml)
+
+            ## Latest version
+            <img src="https://img.shields.io/badge/transistor-${{ steps.step_version.outputs.VERSION }}-orange" alt="transistor-${{ steps.step_version.outputs.VERSION }}">
+          EOF
+          git config --global user.name $GIT_USER
+          git config --global user.email ecto1@duck.com
+          git add README.md
+          git commit --allow-empty -m "[Transistor GIT AUR CI]: Update version"
+          git push --force -v
+  BuildPublish:
+    runs-on: ubuntu-latest
+    needs: GetLatestVersion
+    container: archlinux:latest
+    steps:
+      - name: Checkout local
+        uses: actions/checkout@v4.2.0
+        with:
+          repository: ${{ github.repository }}
+          sparse-checkout: .github/assets
+          sparse-checkout-cone-mode: false
+
+      - name: System update
+        run: pacman -Syu --noconfirm
+      - name: Install sudo, git and compile dependencies
+        run: |
+          # openssh required for creating the ssh aur config
+          # base-devel includes build dependencies (fakeroot, make, gcc, pkgconf)
+          pacman -Syq base-devel openssh git --noconfirm
+
+      - name: Setup build user
+        run: |
+          useradd --create-home --shell /bin/bash builduser -m # Create the builduser
+          passwd -d builduser # Delete the buildusers password
+          printf 'builduser ALL=(ALL) ALL\n' | tee -a /etc/sudoers # Allow the builduser passwordless sudo
+
+      - name: Create SSH AUR config & clone
+        env:
+          AUR_PRIV: ${{ secrets.AUR_P1 }}
+        run: |
+          mkdir -p /home/builduser/.ssh
+          touch /home/builduser/.ssh/known_hosts
+          cp $GITHUB_WORKSPACE/.github/assets/ssh_config /home/builduser/.ssh/config
+
+          chmod -vR 600 /home/builduser/.ssh/* 
+
+          ssh-keyscan -v -t rsa,ecdsa,ed25519 aur.archlinux.org >>/home/builduser/.ssh/known_hosts
+
+          echo "$AUR_PRIV" > /home/builduser/.ssh/aur
+          chmod -R 600 /home/builduser/.ssh/aur*
+
+          ssh-keygen -vy -f /home/builduser/.ssh/aur > /home/builduser/.ssh/aur.pub
+
+          chown -vR builduser:builduser /home/builduser
+
+      - name: Git clone AUR repos
+        run: |
+          sudo -u builduser bash -c 'git clone ${{ env.AUR_TRANSISTOR_REPO }} ${{ env.BUILD_DIR }}'
+
+          git config --global --add safe.directory '${{ env.BUILD_DIR }}'
+
+          git config --global user.name ${{ env.GIT_USER}}
+          git config --global user.email ${{ env.GIT_EMAIL}}
+
+      - name: Update package files
+        run: |
+          echo ${{ needs.GetLatestVersion.outputs.VERSION }}
+          echo RELEASE_VERSION=${{ needs.GetLatestVersion.outputs.VERSION }} >> "$GITHUB_ENV"
+
+          cp $GITHUB_WORKSPACE/.github/assets/PKGBUILD.template ${{ env.BUILD_DIR }}/PKGBUILD
+          cp $GITHUB_WORKSPACE/.github/assets/.SRCINFO.template ${{ env.BUILD_DIR }}/.SRCINFO
+
+          sed -i 's/${version}/'${{ needs.GetLatestVersion.outputs.VERSION }}'/' ${{ env.BUILD_DIR }}/PKGBUILD
+          sed -i 's/${version}/'${{ needs.GetLatestVersion.outputs.VERSION }}'/' ${{ env.BUILD_DIR }}/.SRCINFO
+
+          chown -R builduser:builduser ${{ env.BUILD_DIR }}
+
+      - name: Print pkgbuild & .srcinfo
+        run: |
+          echo "#############################"
+
+          cat ${{ env.BUILD_DIR }}/PKGBUILD
+          cat ${{ env.BUILD_DIR }}/.SRCINFO
+
+      - name: Set parallel makeflags
+        run: sed -i 's/.*MAKEFLAGS=.*/MAKEFLAGS="-j $(nproc)"/' /etc/makepkg.conf
+
+      - name: Test transistor-git build
+        run: |
+          sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; makepkg -s --noconfirm; test $? -eq 0 && touch /tmp/.transistor-gitbuild'
+          echo "TRANSISTOR_GIT_MODIFIED=$(git -C ${{ env.BUILD_DIR }} status -s PKGBUILD | wc -l)" >> "$GITHUB_ENV"
+
+      - name: Publish AUR package transistor-git
+        if: env.TRANSISTOR_GIT_MODIFIED == 1
+        run: |
+          echo "Changes found, publish required."
+          if [ -f  /tmp/.transistor-gitbuild ]; then
+            sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; git remote add aur "ssh://aur@aur.archlinux.org/transistor-git.git"; \
+            git config --global user.name ${{ env.GIT_USER}}
+            git config --global user.email ${{ env.GIT_EMAIL}}
+            git add -fv PKGBUILD .SRCINFO && git commit -m "[GitHub DeltaCopy/transistor-git-aur-ci]: Version ${{ env.RELEASE_VERSION }}" && git push -v aur master'
+          fi
