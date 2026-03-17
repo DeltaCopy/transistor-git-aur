@@ -137,13 +137,13 @@ jobs:
           cat ${{ env.BUILD_DIR }}/PKGBUILD
           cat ${{ env.BUILD_DIR }}/.SRCINFO
 
-      # - name: Set parallel makeflags
-      #   run: sed -i 's/.*MAKEFLAGS=.*/MAKEFLAGS="-j $(nproc)"/' /etc/makepkg.conf
+      - name: Set parallel makeflags
+        run: sed -i 's/.*MAKEFLAGS=.*/MAKEFLAGS="-j $(nproc)"/' /etc/makepkg.conf
 
-      # - name: Test transistor-git build
-      #   run: |
-      #     sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; makepkg -s --noconfirm; test $? -eq 0 && touch /tmp/.transistor-gitbuild'
-      #     echo "TRANSISTOR_GIT_MODIFIED=$(git -C ${{ env.BUILD_DIR }} status -s PKGBUILD | wc -l)" >> "$GITHUB_ENV"
+      - name: Test transistor-git build
+        run: |
+          sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; makepkg -s --noconfirm; test $? -eq 0 && touch /tmp/.transistor-gitbuild'
+          echo "TRANSISTOR_GIT_MODIFIED=$(git -C ${{ env.BUILD_DIR }} status -s PKGBUILD | wc -l)" >> "$GITHUB_ENV"
       
       # - name: Publish AUR package transistor-git
       #   if: env.TRANSISTOR_GIT_MODIFIED == 1
