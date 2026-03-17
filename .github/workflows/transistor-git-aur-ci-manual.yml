@@ -69,7 +69,7 @@ jobs:
     container: archlinux:latest
     steps:
       - name: Checkout local
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v6.0.2
         with:
           repository: ${{ github.repository }}
           sparse-checkout: .github/assets
