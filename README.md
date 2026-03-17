@@ -1,4 +1,4 @@
-# transistor-git-aur
+# transistor-git-aur-ci
 
 Builds the AUR PKGBUILD package https://aur.archlinux.org/packages/transistor-git
 
