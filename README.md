@@ -1,10 +1,13 @@
-# transistor-git-aur-ci
+  # transistor-aur-ci
 
-Builds the AUR PKGBUILD package https://aur.archlinux.org/packages/transistor-git
+  Scheduled pipeline (runs daily at ~12PM) to publish updated PKGBUILD/s for transistor-git AUR package.
 
-[![Transistor PKGBUILD builder](https://github.com/DeltaCopy/transistor-git-aur/actions/workflows/transistor-git-aur.yml/badge.svg)](https://github.com/DeltaCopy/transistor-git-aur/actions/workflows/transistor-git-aur.yml)
+  Upstream repository: https://gitlab.com/driglu4it/transistor
 
-Upstream: https://gitlab.com/driglu4it/transistor
+  AUR package: https://aur.archlinux.org/packages/transistor-git
+
+  [![Transistor AUR CI](https://github.com/DeltaCopy/transistor-aur-ci/actions/workflows/transistor-aur-ci.yml/badge.svg)](https://github.com/DeltaCopy/transistor-aur-ci/actions/workflows/transistor-aur-ci.yml)
+
 
   ## Latest version
-  <img src="https://img.shields.io/badge/transistor-r9.3fcfa21-orange" alt="transistor-r9.3fcfa21">
+  <img src="https://img.shields.io/badge/transistor-r10.a1eaf2d3-orange" alt="transistor-r10.a1eaf2d3">
