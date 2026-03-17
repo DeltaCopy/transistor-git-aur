@@ -1,6 +1,6 @@
   # transistor-aur-ci
 
-  Scheduled pipeline (runs daily at ~12PM) to publish updated PKGBUILD/s for transistor-git AUR package.
+  Scheduled pipeline (runs daily at ~12PM) to publish updated PKGBUILD for transistor-git AUR package.
 
   Upstream repository: https://gitlab.com/driglu4it/transistor
 
