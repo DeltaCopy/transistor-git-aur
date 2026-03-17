@@ -150,8 +150,9 @@ jobs:
         run: |
           echo "Changes found, publish required."
           if [ -f  /tmp/.transistor-gitbuild ]; then
-            sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; git remote add aur "ssh://aur@${{ env.AUR_TRANSISTOR_REPO }}"; \
+            sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; git remote add aur "ssh://aur@aur.archlinux.org/transistor-git.git"; \
             git config --global user.name ${{ env.GIT_USER}}
             git config --global user.email ${{ env.GIT_EMAIL}}
             git add -fv PKGBUILD .SRCINFO && git commit -m "[GitHub DeltaCopy/transistor-git-aur-ci]: Version ${{ env.RELEASE_VERSION }}" && git push -v aur master'
           fi
+
