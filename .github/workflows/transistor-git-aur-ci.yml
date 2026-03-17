@@ -1,5 +1,5 @@
 # Build Transitor and publish release
-name: Transistor AUR CI
+name: Transistor Git AUR CI
 on: workflow_dispatch
 env:
   AUR_TRANSISTOR_REPO: https://aur.archlinux.org/transistor-git.git
@@ -47,7 +47,7 @@ jobs:
           cat << EOF > README.md
             # transistor-aur-ci
 
-            Scheduled pipeline (runs daily at ~12PM) to publish updated PKGBUILD/s for transistor-git AUR package.
+            Scheduled pipeline (runs daily at ~12PM) to publish updated PKGBUILD for transistor-git AUR package.
 
             Upstream repository: https://gitlab.com/driglu4it/transistor
 
@@ -61,7 +61,7 @@ jobs:
           git config --global user.name $GIT_USER
           git config --global user.email ecto1@duck.com
           git add README.md
-          git commit --allow-empty -m "[transistor AUR CI]: Update version"
+          git commit --allow-empty -m "[Transistor GIT AUR CI]: Update version"
           git push --force -v
   BuildPublish:
     runs-on: ubuntu-latest
@@ -153,5 +153,5 @@ jobs:
             sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; git remote add aur "ssh://aur@${{ env.AUR_TRANSISTOR_REPO }}"; \
             git config --global user.name ${{ env.GIT_USER}}
             git config --global user.email ${{ env.GIT_EMAIL}}
-            git add -fv PKGBUILD .SRCINFO && git commit -m "[GitHub DeltaCopy/transistor-aur-ci]: Version ${{ env.RELEASE_VERSION }}" && git push -v aur master'
+            git add -fv PKGBUILD .SRCINFO && git commit -m "[GitHub DeltaCopy/transistor-git-aur-ci]: Version ${{ env.RELEASE_VERSION }}" && git push -v aur master'
           fi
