@@ -95,6 +95,7 @@ jobs:
         run: |
           mkdir -p /home/builduser/.ssh
           touch /home/builduser/.ssh/known_hosts
+          ls -lart $GITHUB_WORKSPACE/.github/assets
           cp $GITHUB_WORKSPACE/.github/assets/ssh_config /home/builduser/.ssh/config
 
           chmod -vR 600 /home/builduser/.ssh/* 
