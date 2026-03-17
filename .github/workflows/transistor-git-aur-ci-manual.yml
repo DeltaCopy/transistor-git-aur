@@ -56,7 +56,7 @@ jobs:
             [![Transistor AUR CI](https://github.com/DeltaCopy/transistor-git-aur-ci/actions/workflows/transistor-git-aur-ci.yml/badge.svg)](https://github.com/DeltaCopy/transistor-git-aur-ci/actions/workflows/transistor-git-aur-ci.yml)
 
             ## Latest version
-            <img src="https://img.shields.io/badge/transistor-${{ steps.step_version.outputs.VERSION }}-orange" alt="transistor-${{ steps.step_version.outputs.VERSION }}">
+            <img src="https://img.shields.io/badge/transistor--git-${{ steps.step_version.outputs.VERSION }}-orange" alt="transistor--git-${{ steps.step_version.outputs.VERSION }}">
           EOF
           git config --global user.name $GIT_USER
           git config --global user.email ecto1@duck.com
