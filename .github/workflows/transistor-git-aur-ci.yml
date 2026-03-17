@@ -1,6 +1,8 @@
 # Build Transitor and publish release
 name: Transistor Git AUR CI
-on: workflow_dispatch
+on:
+  schedule:
+    - cron: "0 00 * * *" # At 00:00 daily
 env:
   AUR_TRANSISTOR_REPO: https://aur.archlinux.org/transistor-git.git
   BUILD_DIR: /tmp/transistor-git
@@ -121,15 +123,15 @@ jobs:
         run: |
           echo ${{ needs.GetLatestVersion.outputs.VERSION }}
           echo RELEASE_VERSION=${{ needs.GetLatestVersion.outputs.VERSION }} >> "$GITHUB_ENV"
-          
+
           cp $GITHUB_WORKSPACE/.github/assets/PKGBUILD.template ${{ env.BUILD_DIR }}/PKGBUILD
           cp $GITHUB_WORKSPACE/.github/assets/.SRCINFO.template ${{ env.BUILD_DIR }}/.SRCINFO
-        
+
           sed -i 's/${version}/'${{ needs.GetLatestVersion.outputs.VERSION }}'/' ${{ env.BUILD_DIR }}/PKGBUILD
           sed -i 's/${version}/'${{ needs.GetLatestVersion.outputs.VERSION }}'/' ${{ env.BUILD_DIR }}/.SRCINFO
-          
+
           chown -R builduser:builduser ${{ env.BUILD_DIR }}
-    
+
       - name: Print pkgbuild & .srcinfo
         run: |
           echo "#############################"
@@ -144,7 +146,7 @@ jobs:
         run: |
           sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; makepkg -s --noconfirm; test $? -eq 0 && touch /tmp/.transistor-gitbuild'
           echo "TRANSISTOR_GIT_MODIFIED=$(git -C ${{ env.BUILD_DIR }} status -s PKGBUILD | wc -l)" >> "$GITHUB_ENV"
-      
+
       - name: Publish AUR package transistor-git
         if: env.TRANSISTOR_GIT_MODIFIED == 1
         run: |
@@ -155,4 +157,3 @@ jobs:
             git config --global user.email ${{ env.GIT_EMAIL}}
             git add -fv PKGBUILD .SRCINFO && git commit -m "[GitHub DeltaCopy/transistor-git-aur-ci]: Version ${{ env.RELEASE_VERSION }}" && git push -v aur master'
           fi
-
