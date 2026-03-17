@@ -45,7 +45,7 @@ jobs:
         run: |
           echo ${{ steps.step_version.outputs.VERSION }}
           cat << EOF > README.md
-            # transistor-aur-ci
+            # transistor-git-aur-ci
 
             Scheduled pipeline (runs daily at ~12PM) to publish updated PKGBUILD for transistor-git AUR package.
 
