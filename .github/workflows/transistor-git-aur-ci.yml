@@ -145,13 +145,13 @@ jobs:
           sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; makepkg -s --noconfirm; test $? -eq 0 && touch /tmp/.transistor-gitbuild'
           echo "TRANSISTOR_GIT_MODIFIED=$(git -C ${{ env.BUILD_DIR }} status -s PKGBUILD | wc -l)" >> "$GITHUB_ENV"
       
-      # - name: Publish AUR package transistor-git
-      #   if: env.TRANSISTOR_GIT_MODIFIED == 1
-      #   run: |
-      #     echo "Changes found, publish required."
-      #     if [ -f  /tmp/.transistor-gitbuild ]; then
-      #       sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; git remote add aur "ssh://aur@$AUR_TRANSISTOR_REPO"; \
-      #       git config --global user.name ${{ env.GIT_USER}}
-      #       git config --global user.email ${{ env.GIT_EMAIL}}
-      #       git add -fv PKGBUILD .SRCINFO && git commit -m "[GitHub DeltaCopy/transistor-aur-ci]: Version ${{ env.RELEASE_VERSION }}" && git push -v aur master'
-      #     fi
+      - name: Publish AUR package transistor-git
+        if: env.TRANSISTOR_GIT_MODIFIED == 1
+        run: |
+          echo "Changes found, publish required."
+          if [ -f  /tmp/.transistor-gitbuild ]; then
+            sudo -u builduser bash -c 'cd ${{ env.BUILD_DIR }}; git remote add aur "ssh://aur@${{ env.AUR_TRANSISTOR_REPO }}"; \
+            git config --global user.name ${{ env.GIT_USER}}
+            git config --global user.email ${{ env.GIT_EMAIL}}
+            git add -fv PKGBUILD .SRCINFO && git commit -m "[GitHub DeltaCopy/transistor-aur-ci]: Version ${{ env.RELEASE_VERSION }}" && git push -v aur master'
+          fi
